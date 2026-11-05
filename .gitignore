@@ -1,2 +1,14 @@
-# Configurações locais do VS Code
+# .NET
+**/bin/
+**/obj/
+
+# React / Node.js
+**/node_modules/
+**/dist/
+
+# VS Code
 .vscode/
+
+# Arquivos locais
+.env
+.env.local
