@@ -1,5 +1,6 @@
 using RetroGames.Services;
 using RetroGames.WebApi.ApiModels;
+using RetroGames.Model.Model;
 
 namespace RetroGames.WebApi.Mappers;
 
@@ -21,6 +22,43 @@ public static class JogoMapper
             false,
             requisicao.Pagina,
             requisicao.TamanhoPagina);
+    }
+
+    public static Jogo ParaModel(
+        this InserirJogoRequestApiModel requisicao)
+    {
+        return new Jogo
+        {
+            Nome = requisicao.Nome,
+            Descricao = string.IsNullOrWhiteSpace(requisicao.Descricao)
+                ? null
+                : requisicao.Descricao,
+            AnoLancamento = requisicao.AnoLancamento,
+            Preco = requisicao.Preco,
+            QuantidadeEstoque = requisicao.QuantidadeEstoque,
+            IdPlataforma = requisicao.IdPlataforma,
+            IdCondicaoJogo = requisicao.IdCondicaoJogo,
+        };
+    }
+
+    public static Jogo ParaModel(
+        this AlterarJogoRequestApiModel requisicao,
+        int id)
+    {
+        return new Jogo
+        {
+            Id = id,
+            Nome = requisicao.Nome,
+            Descricao = string.IsNullOrWhiteSpace(requisicao.Descricao)
+                ? null
+                : requisicao.Descricao,
+            AnoLancamento = requisicao.AnoLancamento,
+            Preco = requisicao.Preco,
+            QuantidadeEstoque = requisicao.QuantidadeEstoque,
+            IdPlataforma = requisicao.IdPlataforma,
+            IdCondicaoJogo = requisicao.IdCondicaoJogo,
+            Ativo = requisicao.Ativo,
+        };
     }
 
     public static ListarJogoResponseApiModel ParaListarResponse(

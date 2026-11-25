@@ -58,7 +58,7 @@ public class JogoController : ControllerBase
     [HttpGet("{id}")]
     public async Task<ActionResult<
         RetroGamesResponseApiModel<ListarPorIdJogoResponseApiModel>>>
-        ListarPorIdAsync(int id)
+        ListarPorId(int id)
     {
         var jogo = await _jogoService.BuscarPorIdAsync(id);
 
@@ -67,6 +67,64 @@ public class JogoController : ControllerBase
         {
             ResponseCode = ResponseCodes.SUCESSO,
             Data = jogo.ParaDetalheResponse(),
+        });
+    }
+
+        [HttpPost]
+    public async Task<ActionResult<
+        RetroGamesResponseApiModel<ListarPorIdJogoResponseApiModel>>>
+        InserirAsync([FromBody] InserirJogoRequestApiModel requisicao)
+    {
+        var jogo = requisicao.ParaModel();
+
+        var criado = await _jogoService.InserirAsync(
+            jogo,
+            requisicao.IdsGeneros);
+
+        var detalhe = await _jogoService.BuscarPorIdAsync(criado.Id);
+
+        var resposta = new RetroGamesResponseApiModel<
+            ListarPorIdJogoResponseApiModel>
+        {
+            ResponseCode = ResponseCodes.SUCESSO,
+            Data = detalhe.ParaDetalheResponse(),
+        };
+
+        return CreatedAtAction(
+            nameof(ListarPorId),
+            new { id = criado.Id },
+            resposta);
+    }
+
+    [HttpPut("{id}")]
+    public async Task<ActionResult<RetroGamesResponseApiModel<object?>>>
+        AlterarAsync(
+            int id,
+            [FromBody] AlterarJogoRequestApiModel requisicao)
+    {
+        var jogo = requisicao.ParaModel(id);
+
+        await _jogoService.AlterarAsync(
+            jogo,
+            requisicao.IdsGeneros);
+
+        return Ok(new RetroGamesResponseApiModel<object?>
+        {
+            ResponseCode = ResponseCodes.SUCESSO,
+            Data = null,
+        });
+    }
+
+    [HttpDelete("{id}")]
+    public async Task<ActionResult<RetroGamesResponseApiModel<object?>>>
+        ExcluirAsync(int id)
+    {
+        await _jogoService.DesativarAsync(id);
+
+        return Ok(new RetroGamesResponseApiModel<object?>
+        {
+            ResponseCode = ResponseCodes.SUCESSO,
+            Data = null,
         });
     }
 }

@@ -37,7 +37,7 @@ public class PlataformaController : ControllerBase
     [HttpGet("{id}")]
     public async Task<ActionResult<
         RetroGamesResponseApiModel<ListarPlataformaResponseApiModel>>>
-        ListarPorIdAsync(int id)
+        ListarPorId(int id)
     {
         var plataforma = await _plataformaService.BuscarPorIdAsync(id);
 
@@ -46,6 +46,56 @@ public class PlataformaController : ControllerBase
         {
             ResponseCode = ResponseCodes.SUCESSO,
             Data = plataforma.ParaResponse(),
+        });
+    }
+
+        [HttpPost]
+    public async Task<ActionResult<
+        RetroGamesResponseApiModel<ListarPlataformaResponseApiModel>>>
+        InserirAsync([FromBody] InserirPlataformaRequestApiModel requisicao)
+    {
+        var plataforma = requisicao.ParaModel();
+        var criada = await _plataformaService.InserirAsync(plataforma);
+
+        var resposta = new RetroGamesResponseApiModel<
+            ListarPlataformaResponseApiModel>
+        {
+            ResponseCode = ResponseCodes.SUCESSO,
+            Data = criada.ParaResponse(),
+        };
+
+        return CreatedAtAction(
+            nameof(ListarPorId),
+            new { id = criada.Id },
+            resposta);
+    }
+
+    [HttpPut("{id}")]
+    public async Task<ActionResult<RetroGamesResponseApiModel<object?>>>
+        AlterarAsync(
+            int id,
+            [FromBody] AlterarPlataformaRequestApiModel requisicao)
+    {
+        var plataforma = requisicao.ParaModel(id);
+        await _plataformaService.AlterarAsync(plataforma);
+
+        return Ok(new RetroGamesResponseApiModel<object?>
+        {
+            ResponseCode = ResponseCodes.SUCESSO,
+            Data = null,
+        });
+    }
+
+    [HttpDelete("{id}")]
+    public async Task<ActionResult<RetroGamesResponseApiModel<object?>>>
+        ExcluirAsync(int id)
+    {
+        await _plataformaService.ExcluirAsync(id);
+
+        return Ok(new RetroGamesResponseApiModel<object?>
+        {
+            ResponseCode = ResponseCodes.SUCESSO,
+            Data = null,
         });
     }
 }
