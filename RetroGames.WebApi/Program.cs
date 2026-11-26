@@ -5,6 +5,7 @@ using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 using RetroGames.WebApi.ActionFilters;
 using RetroGames.WebApi.ApiModels;
+using RetroGames.Services;
 
 Env.TraversePath().Load();
 
@@ -17,6 +18,8 @@ var connectionString =
 
 builder.Services.AddRepositorios(connectionString);
 builder.Services.AddServicosDeNegocio();
+builder.Services.AddAutenticacao();
+builder.Services.AddAutorizacao();
 builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 
 builder.Services
@@ -39,16 +42,42 @@ builder.Services.AddProblemDetails();
 
 var app = builder.Build();
 
+using (var escopo = app.Services.CreateScope())
+{
+    var autenticacaoService =
+        escopo.ServiceProvider.GetRequiredService<IAutenticacaoService>();
+
+    var emailAdministrador =
+        app.Configuration["AdminInicial:Email"]
+        ?? throw new InvalidOperationException(
+            "A configuração AdminInicial__Email não foi encontrada no arquivo .env.");
+
+    var senhaAdministrador =
+        app.Configuration["AdminInicial:Senha"]
+        ?? throw new InvalidOperationException(
+            "A configuração AdminInicial__Senha não foi encontrada no arquivo .env.");
+
+    await autenticacaoService.GarantirAdministradorInicialAsync(
+        emailAdministrador,
+        senhaAdministrador);
+}
+
 app.UseExceptionHandler();
 
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
-
     app.UseSwaggerUI(opcoes =>
     {
         opcoes.SwaggerEndpoint("/openapi/v1.json", "RetroGames API v1");
     });
+}
+
+app.UseAuthentication();
+app.UseAuthorization();
+
+if (app.Environment.IsDevelopment())
+{
+    app.MapOpenApi().AllowAnonymous();
 }
 
 app.MapControllers();

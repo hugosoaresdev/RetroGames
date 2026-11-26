@@ -2,6 +2,8 @@ using Microsoft.AspNetCore.Mvc;
 using RetroGames.Services;
 using RetroGames.WebApi.ApiModels;
 using RetroGames.WebApi.Mappers;
+using Microsoft.AspNetCore.Authorization;
+using RetroGames.WebApi.Configuration;
 
 namespace RetroGames.WebApi.Controllers;
 
@@ -16,6 +18,7 @@ public class PlataformaController : ControllerBase
         _plataformaService = plataformaService;
     }
 
+    [AllowAnonymous]
     [HttpGet]
     public async Task<ActionResult<
         RetroGamesResponseApiModel<List<ListarPlataformaResponseApiModel>>>>
@@ -34,6 +37,7 @@ public class PlataformaController : ControllerBase
         });
     }
 
+    [AllowAnonymous]
     [HttpGet("{id}")]
     public async Task<ActionResult<
         RetroGamesResponseApiModel<ListarPlataformaResponseApiModel>>>
@@ -49,7 +53,8 @@ public class PlataformaController : ControllerBase
         });
     }
 
-        [HttpPost]
+    [Authorize(Policy = Politicas.Administrador)]
+    [HttpPost]
     public async Task<ActionResult<
         RetroGamesResponseApiModel<ListarPlataformaResponseApiModel>>>
         InserirAsync([FromBody] InserirPlataformaRequestApiModel requisicao)
@@ -70,6 +75,7 @@ public class PlataformaController : ControllerBase
             resposta);
     }
 
+    [Authorize(Policy = Politicas.Administrador)]
     [HttpPut("{id}")]
     public async Task<ActionResult<RetroGamesResponseApiModel<object?>>>
         AlterarAsync(
@@ -86,6 +92,7 @@ public class PlataformaController : ControllerBase
         });
     }
 
+    [Authorize(Policy = Politicas.Administrador)]
     [HttpDelete("{id}")]
     public async Task<ActionResult<RetroGamesResponseApiModel<object?>>>
         ExcluirAsync(int id)

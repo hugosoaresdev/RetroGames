@@ -23,7 +23,7 @@ Se duas referências se contradizem, aponte o conflito e pergunte ao estudante q
 
 ### Construção aula a aula
 
-O projeto é construído em etapas, e este arquivo descreve o sistema completo. Muitas classes citadas aqui ainda não existem na aula atual. Antes de propor algo, confira o que já existe no repositório e faça só o que o roteiro da aula pede. Não peça, não crie e não altere arquivos de aulas futuras. Ordem das aulas: aula 1, ambiente, banco e modelos; aula 2, Repository; aula 3, Services (`BusinessErrors`, `BusinessRuleException` e a transação na gravação de jogo com gêneros); aula 4, API de leitura (`Program.cs`, envelope, `ResponseCodes` 0 a 3, `GlobalExceptionHandler`, Swagger e rotas GET); aula 5, API de gravação (ApiModels de entrada, validators, POST/PUT/DELETE); aula 6, autenticação e proteção da administração; aula 7, front-end. Os testes unitários são uma tarefa adicional, feita fora das aulas; só crie testes quando o estudante estiver nessa tarefa.
+O projeto é construído em etapas, e este arquivo descreve o sistema completo. Muitas classes citadas aqui ainda não existem na aula atual. Antes de propor algo, confira o que já existe no repositório e faça só o que o roteiro da aula pede. Não peça, não crie e não altere arquivos de aulas futuras. Ordem das aulas: aula 1, ambiente, banco e modelos; aula 2, Repository; aula 3, Services (`BusinessErrors`, `BusinessRuleException` e a transação na gravação de jogo com gêneros); aula 4, API de leitura (`Program.cs`, envelope, `ResponseCodes` 0 a 3, `GlobalExceptionHandler`, Swagger e rotas GET); aula 5, API de gravação (ApiModels de entrada, validators, POST/PUT/DELETE); aula 6, autenticação e proteção da administração; aula 7, front-end público (projeto React com Vite, acesso à API, rotas, catálogo e detalhe do jogo); aula 8, front-end com login, sessão e telas de administração. O módulo de Compras vem depois, nas aulas 9 e 10. Os testes unitários são uma tarefa adicional, feita fora das aulas; só crie testes quando o estudante estiver nessa tarefa.
 
 A especificação descreve o sistema pronto. Quando o roteiro da aula deixa algo da especificação para uma aula posterior (por exemplo, esconder jogos inativos de quem não é administrador, que entra na aula 6), isso não é conflito: siga o roteiro e não implemente a parte adiada. Só pergunte ao estudante quando o roteiro e a especificação disserem coisas diferentes sobre o que deve ser feito agora.
 
@@ -105,7 +105,17 @@ using (var transactionScope = new TransactionScope(TransactionScopeOption.Requir
 - No curso, por simplicidade, a aplicação acessa o MySQL com o usuário local do estudante (por exemplo, `root`). Em sistemas reais, ela usaria um usuário próprio, só com as permissões necessárias.
 - Connection string e senha do administrador inicial ficam no arquivo `.env`, na raiz do repositório, que está no `.gitignore` (como no Node): `ConnectionStrings__Default`, `AdminInicial__Email` e `AdminInicial__Senha`. O modelo versionado é o `.env.example`, só com `SUA_SENHA` no lugar das senhas. A API carrega o `.env` com o pacote DotNetEnv. Os `appsettings*.json` são versionados e nunca têm senha. Não use `dotnet user-secrets`. Nunca escreva credenciais em arquivo versionado, nem em exemplos.
 - Senhas são guardadas apenas como hash (`PasswordHasher`).
-- Sessão por cookie com proteção CSRF; não guarde token no `localStorage`.
+- A API é segura por padrão: a `FallbackPolicy` (em `AutorizacaoConfig`) exige usuário autenticado em toda rota. Rota pública recebe `[AllowAnonymous]` de forma explícita, e só quando a especificação a define como Público; gravações e gestão usam `[Authorize(Policy = Politicas.Administrador)]`. Nunca remova a política padrão para "fazer funcionar".
+- Acesso de cada rota (siga exatamente; rota nova que não esteja aqui exige login, e a decisão de abri-la é do professor):
+
+  | Acesso | Rotas | Como marcar |
+  | --- | --- | --- |
+  | Público | `POST /api/Autenticacao/login` e `/cadastrar`; `GET /api/Jogo` e `/api/Jogo/{id}`; `GET /api/Plataforma`, `/api/Genero` (lista e por id) e `/api/CondicaoJogo`; Swagger em desenvolvimento | `[AllowAnonymous]` na action; `app.MapOpenApi().AllowAnonymous()` no `Program.cs` |
+  | Usuário logado | `POST /api/Autenticacao/logout`, `GET /api/Autenticacao/eu`, `POST /api/Pedido`, `GET /api/Pedido/meus` e `/api/Pedido/{id}` (dono ou administrador) | Nada: vale a política padrão |
+  | Administrador | POST, PUT e DELETE de `/api/Plataforma`, `/api/Jogo` e `/api/Genero`; `GET /api/Pedido`, `PUT /api/Pedido/{id}/situacao` e `GET /api/SituacaoPedido` | `[Authorize(Policy = Politicas.Administrador)]` |
+
+  Até a aula 8 só existem login, logout, eu, catálogo, plataformas, gêneros (leitura) e condições; cadastro, pedidos, situações e gravação de gêneros são do Módulo de Compras. Inativos em `GET /api/Jogo` só aparecem para o administrador (RN04), sem mudar o acesso da rota.
+- Sessão por cookie `HttpOnly` e `SameSite=Strict`; não guarde token no `localStorage`. O `SameSite=Strict` é a defesa contra CSRF deste projeto: por simplicidade, não há token antiforgery (`AddAntiforgery`, cabeçalho `X-CSRF-TOKEN`). Não o implemente sem pedido do professor.
 - `bin/`, `obj/`, `node_modules/` e `dist/` não são versionados.
 
 ## 4. Como trabalhar com o estudante

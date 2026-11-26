@@ -19,7 +19,7 @@ public static class JogoMapper
             requisicao.Busca,
             requisicao.IdPlataforma,
             requisicao.IdGenero,
-            false,
+            requisicao.IncluirInativos,
             requisicao.Pagina,
             requisicao.TamanhoPagina);
     }
