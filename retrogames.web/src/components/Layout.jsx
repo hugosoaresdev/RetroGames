@@ -1,6 +1,15 @@
-import { NavLink, Outlet } from 'react-router-dom'
+import { NavLink, Outlet, useNavigate } from 'react-router-dom'
+import useAutenticacao from '../hooks/useAutenticacao'
 
 function Layout() {
+  const { usuario, carregando, ehAdministrador, sair } = useAutenticacao()
+  const navegar = useNavigate()
+
+  async function aoSair() {
+    await sair()
+    navegar('/')
+  }
+
   return (
     <>
       <nav className="navbar navbar-expand-lg navbar-dark bg-dark">
@@ -34,6 +43,71 @@ function Layout() {
                   Catálogo
                 </NavLink>
               </li>
+            </ul>
+
+            <ul className="navbar-nav ms-auto">
+              {!carregando &&
+                (usuario ? (
+                  <>
+                    <li className="nav-item">
+                      <span className="nav-link">
+                        Olá, {usuario.nome}
+                      </span>
+                    </li>
+
+                    {ehAdministrador && (
+                      <li className="nav-item dropdown">
+                        <button
+                          className="nav-link dropdown-toggle"
+                          type="button"
+                          data-bs-toggle="dropdown"
+                          aria-expanded="false"
+                        >
+                          Administração
+                        </button>
+                        <ul className="dropdown-menu dropdown-menu-end">
+                          <li>
+                            <NavLink
+                              className="dropdown-item"
+                              to="/admin/jogos"
+                            >
+                              Jogos
+                            </NavLink>
+                          </li>
+                          <li>
+                            <NavLink
+                              className="dropdown-item"
+                              to="/admin/plataformas"
+                            >
+                              Plataformas
+                            </NavLink>
+                          </li>
+                        </ul>
+                      </li>
+                    )}
+
+                    <li className="nav-item">
+                      <button
+                        className="nav-link"
+                        type="button"
+                        onClick={aoSair}
+                      >
+                        Sair
+                      </button>
+                    </li>
+                  </>
+                ) : (
+                  <li className="nav-item">
+                    <NavLink
+                      className={({ isActive }) =>
+                        `nav-link${isActive ? ' active' : ''}`
+                      }
+                      to="/login"
+                    >
+                      Entrar
+                    </NavLink>
+                  </li>
+                ))}
             </ul>
           </div>
         </div>
